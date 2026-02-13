@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>九宫格抽奖机</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .lottery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 120px);
+      grid-template-rows: repeat(3, 120px);
+      gap: 10px;
+      margin: 30px auto;
+      position: relative;
+    }
+
+    .grid-item {
+      background: linear-gradient(145deg, #ffffff, #e6e6e6);
+      border: 3px solid #ddd;
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .grid-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .grid-item.active {
+      background: linear-gradient(145deg, #ff6b6b, #ee5a52);
+      border-color: #ff4757;
+      color: white;
+      animation: pulse 0.5s ease-in-out;
+    }
+
+    .grid-item.start {
+      background: linear-gradient(145deg, #4ecdc4, #44a08d);
+      border-color: #00d2d3;
+      color: white;
+      cursor: pointer;
+    }
+
+    .grid-item.start:hover {
+      background: linear-gradient(145deg, #00d2d3, #4ecdc4);
+      transform: translateY(-2px);
+    }
+
+    .grid-item.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .emoji {
+      font-size: 2em;
+      margin-bottom: 5px;
+    }
+
+    .start-btn {
+      background: linear-gradient(145deg, #ff6b6b, #ee5a52);
+      border: none;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 10px;
+      padding: 10px 20px;
+      margin-top: 20px;
+    }
+
+    .start-btn:hover:not(:disabled) {
+      background: linear-gradient(145deg, #ee5a52, #ff6b6b);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+    }
+
+    .start-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      min-height: 30px;
+    }
+
+    .result.show {
+      animation: bounceIn 0.6s ease-out;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes bounceIn {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+      70% { transform: scale(0.9); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .spinning {
+      animation: spin 0.1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .counter {
+      margin-top: 15px;
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎁 九宫格抽奖机 🎁</h1>
+    
+    <div class="lottery-grid" id="lotteryGrid">
+      <div class="grid-item" data-index="0">
+        <div class="emoji">🧧</div>
+        <div>红包</div>
+      </div>
+      <div class="grid-item" data-index="1">
+        <div class="emoji">🧧</div>
+        <div>红包</div>
+      </div>
+      <div class="grid-item" data-index="2">
+        <div class="emoji">🧧</div>
+        <div>红包</div>
+      </div>
+      <div class="grid-item" data-index="7">
+        <div class="emoji">🧧</div>
+        <div>红包</div>
+      </div>
+      <div class="grid-item start" data-index="8">
+        <div class="emoji">🎯</div>
+        <div>开始抽奖</div>
+      </div>
+      <div class="grid-item" data-index="3">
+        <div class="emoji">🧧</div>
+        <div>红包</div>
+      </div>
+      <div class="grid-item" data-index="6">
+        <div class="emoji">🧧</div>
+        <div>红包</div>
+      </div>
+      <div class="grid-item" data-index="5">
+        <div class="emoji">🧧</div>
+        <div>红包</div>
+      </div>
+      <div class="grid-item" data-index="4">
+        <div class="emoji">🧧</div>
+        <div>红包</div>
+      </div>
+    </div>
+
+    <button class="start-btn" id="startBtn">开始抽奖</button>
+    
+    <div class="result" id="result"></div>
+    <div class="counter" id="counter"></div>
+  </div>
+
+  <script>
+    class LotteryMachine {
+      constructor() {
+        this.gridItems = document.querySelectorAll('.grid-item');
+        this.startBtn = document.getElementById('startBtn');
+        this.resultDiv = document.getElementById('result');
+        this.counterDiv = document.getElementById('counter');
+        this.isSpinning = false;
+        this.currentPosition = 8;
+        this.spinCount = 0;
+        this.totalSpins = 0;
+        
+        // 重新初始化按钮和开始格子的状态
+        this.startBtn.disabled = false;
+        this.startBtn.textContent = '开始抽奖';
+        const startGridItem = document.querySelector('[data-index="8"]');
+        startGridItem.classList.remove('disabled');
+        startGridItem.style.cursor = 'pointer';
+        
+        // 奖品数据 - 30元以内的随机红包金额
+        this.prizes = [
+          { emoji: '🧧', type: '红包' },
+          { emoji: '🧧', type: '红包' },
+          { emoji: '🧧', type: '红包' },
+          { emoji: '🧧', type: '红包' },
+          { emoji: '🧧', type: '红包' },
+          { emoji: '🧧', type: '红包' },
+          { emoji: '🧧', type: '红包' },
+          { emoji: '🧧', type: '红包' }
+        ];
+        
+        // 生成吉利红包金额（88.8元以内）
+        this.luckyAmounts = ['18.8', '28.8', '58.8', '68.8', '88.8', '16.88', '6.88', '26.88', '8.88'];
+        this.generateRandomAmount = () => {
+          const randomIndex = Math.floor(Math.random() * this.luckyAmounts.length);
+          return this.luckyAmounts[randomIndex];
+        };
+        
+        this.initEventListeners();
+        this.updateCounter();
+      }
+
+      initEventListeners() {
+        this.startBtn.addEventListener('click', () => this.startLottery());
+        
+        // 点击中间的开始格子也能触发抽奖
+        const startGridItem = document.querySelector('[data-index="8"]');
+        startGridItem.addEventListener('click', () => {
+          if (!this.isSpinning) {
+            this.startLottery();
+          }
+        });
+      }
+
+      startLottery() {
+        if (this.isSpinning) return;
+        
+        // 检查是否已经抽过奖
+        if (sessionStorage.getItem('hasParticipated')) {
+          this.resultDiv.innerHTML = '🎊 您已经参与过抽奖了！🎊';
+          this.resultDiv.classList.add('show');
+          return;
+        }
+        
+        this.isSpinning = true;
+        this.startBtn.disabled = true;
+        this.resultDiv.textContent = '';
+        this.resultDiv.classList.remove('show');
+        
+        // 增加抽奖次数（每次点击抽奖按钮时）
+        this.totalSpins++;
+        this.updateCounter();
+        
+        // 随机选择奖品位置
+        const randomPrize = Math.floor(Math.random() * this.prizes.length);
+        
+        // 计算转圈数（减少转圈次数）
+        const minSpins = 1;
+        const maxSpins = 3;
+        const spins = minSpins + Math.random() * (maxSpins - minSpins);
+        
+        // 计算最终位置
+        const finalPosition = (randomPrize + 8) % 8;
+        const totalSteps = Math.floor(spins * 8) + finalPosition - this.currentPosition;
+        
+        // 生成随机红包金额
+        const randomAmount = this.generateRandomAmount();
+        
+        this.spinToPosition(randomPrize, totalSteps, randomAmount);
+      }
+
+      spinToPosition(prizeIndex, steps, amount) {
+        let step = 0;
+        const speed = 100; // 初始速度（毫秒）
+        
+        const spin = () => {
+          // 移除之前的active状态
+          this.gridItems.forEach(item => item.classList.remove('active'));
+          
+          // 移动到下一个位置
+          this.currentPosition = (this.currentPosition + 1) % 8;
+          const currentElement = document.querySelector(`[data-index="${this.currentPosition}"]`);
+          currentElement.classList.add('active');
+          
+          step++;
+          
+          // 减速效果
+          const currentSpeed = speed + (step * 20);
+          
+          if (step < steps) {
+            setTimeout(spin, currentSpeed);
+          } else {
+            // 抽奖结束
+            setTimeout(() => {
+              this.finishLottery(prizeIndex, amount);
+            }, 300);
+          }
+        };
+        
+        spin();
+      }
+
+      finishLottery(prizeIndex, amount) {
+        const prize = this.prizes[prizeIndex];
+        
+        // 标记用户已参与抽奖
+        sessionStorage.setItem('hasParticipated', 'true');
+        
+        // 显示结果
+        this.resultDiv.innerHTML = `🎊 恭喜获得：${prize.emoji} ${prize.type} ${amount}元 🎊`;
+        this.resultDiv.classList.add('show');
+        
+        // 播放恭喜动画
+        this.celebrateWin();
+        
+        // 重置状态
+        this.isSpinning = false;
+        this.startBtn.disabled = false;
+        
+        // 禁用抽奖按钮，防止重复点击
+        this.startBtn.disabled = true;
+        this.startBtn.textContent = '已参与抽奖';
+        
+        // 禁用中间的开始格子
+        const startGridItem = document.querySelector('[data-index="8"]');
+        startGridItem.classList.add('disabled');
+        startGridItem.style.cursor = 'not-allowed';
+      }
+
+      celebrateWin() {
+        // 闪烁效果
+        let flashCount = 0;
+        const flash = setInterval(() => {
+          this.gridItems.forEach(item => {
+            item.style.filter = flashCount % 2 === 0 ? 'brightness(1.5)' : 'brightness(1)';
+          });
+          flashCount++;
+          
+          if (flashCount > 6) {
+            clearInterval(flash);
+            this.gridItems.forEach(item => {
+              item.style.filter = '';
+            });
+          }
+        }, 100);
+      }
+
+      updateCounter() {
+        this.counterDiv.textContent = `今日抽奖次数：${this.totalSpins} 次`;
+      }
+    }
+
+    // 初始化抽奖机
+    document.addEventListener('DOMContentLoaded', () => {
+      // 清除之前的抽奖状态，让用户刷新页面后可以重新抽奖
+      sessionStorage.removeItem('hasParticipated');
+      new LotteryMachine();
+    });
+  </script>
+</body>
+</html>
